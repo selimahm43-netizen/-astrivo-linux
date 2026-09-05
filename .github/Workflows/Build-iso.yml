@@ -1,0 +1,42 @@
+name: Build Astrivo Linux ISO
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Install ISO build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            live-build \
+            debootstrap \
+            squashfs-tools \
+            xorriso \
+            grub-pc-bin \
+            grub-efi-amd64-bin \
+            mtools \
+            dosfstools
+
+      - name: Extract Astrivo source
+        run: |
+          tar -xzf astrivo-linux-1.0-first-light-expanded-store-source.tar.gz
+
+      - name: Build Astrivo ISO
+        working-directory: astrivo-linux-1.0-first-light
+        run: |
+          chmod +x BUILD.sh
+          sudo ./BUILD.sh
+
+      - name: Upload Astrivo ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: astrivo-linux-1.0-first-light-iso
+          path: astrivo-linux-1.0-first-light/*.iso
+          if-no-files-found: error
